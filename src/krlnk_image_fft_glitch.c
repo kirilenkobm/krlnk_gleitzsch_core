@@ -6,26 +6,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include "fft_effects.h"  // Add this line
 
 
 typedef void (*EffectFunc)(fftw_complex *, int);
 
-// Effect functions
+// Effect functions >>>>>
 // this one is quite good
-void zero_mid_freq(fftw_complex *out, int chunk_size) {
-    for (int i = 30; i < chunk_size - 1; ++i) {
-        out[i][0] = 0;
-        out[i][1] = 0;
-    }
-}
 
-// not so cool
-void amplify_high_freq(fftw_complex *out, int chunk_size) {
-    for (int i = chunk_size - 10; i < chunk_size; ++i) {
-        out[i][0] *= 2;
-        out[i][1] *= 2;
-    }
-}
+// >>>> Effect functions
 
 
 void process_chunk(double *image,
@@ -78,8 +67,15 @@ void image_fft_glitch(double *image, int size, int chunk_size, const char *effec
 
     // select the desired effect
     EffectFunc current_effect;
-    if (strcmp(effect, "zero_mid_freq") == 0)
-    {
+    if (strcmp(effect, "preserve_low_cut_high") == 0) {
+        current_effect = preserve_low_cut_high;
+    } else if (strcmp(effect, "linear_fade") == 0) {
+        current_effect = linear_fade;
+    } else if (strcmp(effect, "boost_mids") == 0) {
+        current_effect = boost_mids;
+    } else if (strcmp(effect, "inverse_fade") == 0) {
+        current_effect = inverse_fade;
+    } else if (strcmp(effect, "zero_mid_freq") == 0) {
         current_effect = zero_mid_freq;
     } else if (strcmp(effect, "amplify_high_freq") == 0) {
         current_effect = amplify_high_freq;
