@@ -1,0 +1,7 @@
+.vscode/
+.idea
+.DS_Store
+bin/
+*.so
+occasional_masterpieces/
+test_output_glitched/
