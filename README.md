@@ -1,6 +1,7 @@
 # Krlnk Gleitzsch Core
 
 ![Apple M1 Supported](https://img.shields.io/badge/Apple%20M1-Supported-black.svg)
+![Build Status](https://github.com/kirilenkobm/krlnk_gleitzsch_core/actions/workflows/c-cpp.yml/badge.svg)
 
 A simple algorithm that applies FFT to introduce glitch to image arrays.
 Imitates sound compression and decompression.

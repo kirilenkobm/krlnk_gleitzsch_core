@@ -16,16 +16,12 @@ image_fft_glitch.image_fft_glitch.argtypes = [ctypes.POINTER(ctypes.c_double), c
 
 def process_channel(img, channel_num, chunk_size):
     channel = img[:, :, channel_num].flatten()
-
     # Create ctypes-compatible arrays
     channel_c_array = (ctypes.c_double * len(channel))(*channel)
-
     # Call your pseudo_compress_decompress_wrapper function for each channel
     image_fft_glitch.image_fft_glitch(channel_c_array, len(channel), chunk_size)
-
     # Convert ctypes array back to NumPy arrays
     channel_numpy = np.ctypeslib.as_array(channel_c_array)
-
     # Reshape to original 2D shape
     reshaped_arr = channel_numpy.reshape(img[:, :, channel_num].shape)
     return reshaped_arr

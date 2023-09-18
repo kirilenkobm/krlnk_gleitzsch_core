@@ -11,7 +11,7 @@ typedef void (*EffectFunc)(fftw_complex *, int);
 // Effect functions
 // this one is quite good
 void zero_mid_freq(fftw_complex *out, int chunk_size) {
-    for (int i = 20; i < chunk_size - 10; ++i) {
+    for (int i = 30; i < chunk_size - 1; ++i) {
         out[i][0] = 0;
         out[i][1] = 0;
     }
@@ -30,7 +30,6 @@ void process_chunk(double *image,
                    int chunk_size,
                    fftw_plan p,
                    fftw_complex *in,
-                   fftw_complex *out,
                    EffectFunc effect)
                    {
     // Copy chunk of input image data to FFTW input
@@ -43,10 +42,10 @@ void process_chunk(double *image,
     fftw_execute(p);
 
     // HERE is where the magic could happen
-    effect(out, chunk_size);
+    effect(in, chunk_size);
 
     // Execute Inverse FFT
-    fftw_plan p_inv = fftw_plan_dft_1d(chunk_size, out, in, FFTW_BACKWARD, FFTW_MEASURE);
+    fftw_plan p_inv = fftw_plan_dft_1d(chunk_size, in, in, FFTW_BACKWARD, FFTW_MEASURE);
     fftw_execute(p_inv);
 
     // Copy back to original image array
@@ -62,13 +61,12 @@ void process_chunk(double *image,
 // function to be imported
 void image_fft_glitch(double *image, int size, int chunk_size)
 {
-    fftw_complex *in, *out;
+    fftw_complex *in;
     fftw_plan p;
 
     // Initialize FFTW
     in = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * chunk_size);
-    out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * chunk_size);
-    p = fftw_plan_dft_1d(chunk_size, in, out, FFTW_FORWARD, FFTW_MEASURE);
+    p = fftw_plan_dft_1d(chunk_size, in, in, FFTW_FORWARD, FFTW_MEASURE);
 
     int offset;
     EffectFunc current_effect = zero_mid_freq;  // Choose your effect here
@@ -76,19 +74,18 @@ void image_fft_glitch(double *image, int size, int chunk_size)
     // not sure whether it helped me a lot =)
     #pragma omp parallel for
     for (offset = 0; offset + chunk_size <= size; offset += chunk_size) {
-        process_chunk(image, offset, chunk_size, p, in, out, current_effect);
+        process_chunk(image, offset, chunk_size, p, in, current_effect);
     }
 
     // Handle the last chunk if it's smaller than chunk_size
     int remaining = size - offset;
     if (remaining > 0) {
-        fftw_plan p_last = fftw_plan_dft_1d(remaining, in, out, FFTW_FORWARD, FFTW_MEASURE);
-        process_chunk(image, offset, remaining, p_last, in, out, current_effect);
+        fftw_plan p_last = fftw_plan_dft_1d(remaining, in, in, FFTW_FORWARD, FFTW_MEASURE);
+        process_chunk(image, offset, remaining, p_last, in, current_effect);
         fftw_destroy_plan(p_last);
     }
 
     // Clean up FFTW
     fftw_destroy_plan(p);
     fftw_free(in);
-    fftw_free(out);
 }
