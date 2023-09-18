@@ -4,7 +4,7 @@
 
 A simple algorithm that applies FFT to introduce glitch to image arrays.
 Imitates sound compression and decompression.
-
+The project depends on `fftw3` which can be installed using `brew`.
 Just do `git clone` and `make`.
 
 To run tests:
