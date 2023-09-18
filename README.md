@@ -15,23 +15,35 @@ pip3 install -r requirements.txt
 ./quick_test.py
 ```
 
-Drafty usage in a Python-based project:
-```txt
-# initiate the library
-image_fft_glitch = ctypes.CDLL(glitch_lib_path)
-image_fft_glitch.image_fft_glitch.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.c_int, ctypes.c_int]
+## Usage
 
-# get some image's channel
-img = io.imread(img_path)
-red_channel = img[:, :, 0].flatten()
-# and process it
-red_c_array = (ctypes.c_double * len(red_channel))(*red_channel)
-image_fft_glitch.image_fft_glitch(red_c_array, len(red_channel), chunk_size)
-red_numpy = np.ctypeslib.as_array(red_c_array)
-reshaped_red = red_numpy.reshape(img[:, :, 0].shape)
-# then recover the whole image
-glitched_img = np.stack([reshaped_red, reshaped_green, reshaped_blue], axis=2).astype(np.uint8)
+Drafty usage in a Python-based project:
+```python
+# locate the shared library
+glitch_lib_path = "bin/krlnk_image_fft_glitch.so"
+image_fft_glitch = ctypes.CDLL(glitch_lib_path)
+image_fft_glitch.image_fft_glitch.argtypes = [ctypes.POINTER(ctypes.c_double),  # image 2D array
+                                              ctypes.c_int,  # number of pixels in 2D array
+                                              ctypes.c_int,  # chunk size -> recommended image width
+                                              ctypes.c_char_p,  # effect name
+                                              ctypes.c_bool]  # apply interlacing
+# apply the function to a 2D array
+channel = img[:, :, channel_num].flatten()
+# Create ctypes-compatible arrays
+channel_c_array = (ctypes.c_double * len(channel))(*channel)
+# Call your pseudo_compress_decompress_wrapper function for each channel
+image_fft_glitch.image_fft_glitch(channel_c_array, len(channel), chunk_size, test_effect, True)
+# Convert ctypes array back to NumPy arrays
+channel_numpy = np.ctypeslib.as_array(channel_c_array)
+# Reshape to original 2D shape
+reshaped_arr = channel_numpy.reshape(img[:, :, channel_num].shape)
 ```
+
+Available effects are:
+```txt
+fill this part
+```
+
 ## Linked projects
 
 Those projects use `lame` to achieve the desired effect.

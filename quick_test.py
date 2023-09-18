@@ -11,7 +11,12 @@ os.makedirs(output_glitched_dir, exist_ok=True)
 
 glitch_lib_path = "bin/krlnk_image_fft_glitch.so"
 image_fft_glitch = ctypes.CDLL(glitch_lib_path)
-image_fft_glitch.image_fft_glitch.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.c_int, ctypes.c_int]
+image_fft_glitch.image_fft_glitch.argtypes = [ctypes.POINTER(ctypes.c_double),
+                                              ctypes.c_int,
+                                              ctypes.c_int,
+                                              ctypes.c_char_p,
+                                              ctypes.c_bool]
+test_effect = b"zero_mid_freq"
 
 
 def process_channel(img, channel_num, chunk_size):
@@ -19,7 +24,7 @@ def process_channel(img, channel_num, chunk_size):
     # Create ctypes-compatible arrays
     channel_c_array = (ctypes.c_double * len(channel))(*channel)
     # Call your pseudo_compress_decompress_wrapper function for each channel
-    image_fft_glitch.image_fft_glitch(channel_c_array, len(channel), chunk_size)
+    image_fft_glitch.image_fft_glitch(channel_c_array, len(channel), chunk_size, test_effect, True)
     # Convert ctypes array back to NumPy arrays
     channel_numpy = np.ctypeslib.as_array(channel_c_array)
     # Reshape to original 2D shape
