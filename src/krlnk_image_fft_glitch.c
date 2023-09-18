@@ -34,7 +34,7 @@ void process_chunk(double *image, int offset, int chunk_size, fftw_plan p, fftw_
 }
 
 
-// funciton to be imported
+// function to be imported
 void image_fft_glitch(double *image, int size, int chunk_size) {
     fftw_complex *in, *out;
     fftw_plan p;
