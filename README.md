@@ -5,8 +5,12 @@
 
 A simple algorithm that applies FFT to introduce glitch to image arrays.
 Imitates sound compression and decompression.
-The project depends on `fftw3` which can be installed using `brew`.
-Just do `git clone` and `make`.
+
+## Build
+
+The project depends on `fftw3` which can be installed using `brew` on macOS 
+or `sudo apt-get install -y libfftw3-dev` on Ubuntu.
+Afterwards, just call `make`.
 
 To run tests:
 
@@ -17,7 +21,19 @@ pip3 install -r requirements.txt
 
 ## Usage
 
-Drafty usage in a Python-based project:
+### image_fft_glitch function
+
+The following arguments: to be filled
+
+#### Available effects are:
+```txt
+fill this part
+```
+
+### As a shared library in a Python-based project
+
+The snippet below...
+
 ```python
 # locate the shared library
 glitch_lib_path = "bin/krlnk_image_fft_glitch.so"
@@ -39,10 +55,13 @@ channel_numpy = np.ctypeslib.as_array(channel_c_array)
 reshaped_arr = channel_numpy.reshape(img[:, :, channel_num].shape)
 ```
 
-Available effects are:
-```txt
-fill this part
-```
+### In a swiftUI app
+
+...
+
+### In a Kotlin app
+
+...
 
 ## Linked projects
 

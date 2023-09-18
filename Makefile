@@ -15,6 +15,7 @@ all: $(OUTPUT_DIR)/krlnk_image_fft_glitch.so
 $(OUTPUT_DIR)/krlnk_image_fft_glitch.so: $(OBJ_FILES)
 	mkdir -p $(OUTPUT_DIR)
 	$(CC) $(CFLAGS) -shared -o $(OUTPUT_DIR)/krlnk_image_fft_glitch.so $(OBJ_FILES) $(LIBS)
+	rm -f $(OBJ_FILES)
 
 src/%.o: src/%.c
 	$(CC) $(CFLAGS) -c -o $@ $<

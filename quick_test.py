@@ -16,7 +16,7 @@ image_fft_glitch.image_fft_glitch.argtypes = [ctypes.POINTER(ctypes.c_double),
                                               ctypes.c_int,
                                               ctypes.c_char_p,
                                               ctypes.c_bool]
-test_effect = b"boost_mids"
+test_effect = b"amplify_high_freq"
 
 
 def process_channel(img, channel_num, chunk_size):
