@@ -20,9 +20,10 @@ image_fft_glitch.image_fft_glitch.argtypes = [
     ctypes.POINTER(ctypes.c_double),  # imag_hist
     ctypes.c_int                      # imag_hist_len
 ]
-real_hist_test = [1, 0.5, 0.0, 0.0, 0.5]
+real_hist_test = [1.0, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0]
 real_hist_len_test = len(real_hist_test)
-imag_hist_test = [2.0, 0.5, 0.0, 0.0, 0.0]
+imag_hist_test = real_hist_test.copy()
 imag_hist_len_test = len(real_hist_test)
 
 
