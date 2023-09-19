@@ -2,7 +2,7 @@ CC=gcc
 CFLAGS=-I./include -Wall -fPIC $(shell pkg-config --cflags fftw3)
 LIBS=$(shell pkg-config --libs fftw3)
 OUTPUT_DIR=bin
-OBJ_FILES=src/krlnk_image_fft_glitch.o src/fft_effects.o
+OBJ_FILES=src/krlnk_image_fft_glitch.o src/fft_effects.o src/named_histograms.o  # Add named_histograms.o here
 
 # Detect M1 Mac and add -arch arm64 flag
 ARCH := $(shell arch)

@@ -6,10 +6,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#include "fft_effects.h"  // Add this line
-
-
-typedef void (*EffectFunc)(fftw_complex *, int);
+#include "fft_effects.h"
+#include "named_histograms.h"
 
 
 void process_chunk(double *image,
@@ -18,8 +16,8 @@ void process_chunk(double *image,
                    fftw_plan p,
                    fftw_plan p_inv,
                    fftw_complex *in,
-                   double *real_histogram,
-                   double *imag_histogram)
+                   const double *real_histogram,
+                   const double *imag_histogram)
 {
     // Copy chunk of input image data to FFTW input
     for (int i = 0; i < chunk_size; ++i) {
@@ -27,18 +25,25 @@ void process_chunk(double *image,
         in[i][1] = 0;
     }
 
+    // Quantize to X levels
+    int levels = 16;
+    for (int i = 0; i < chunk_size; ++i) {
+        in[i][0] = round(in[i][0] * levels) / levels;
+        in[i][1] = round(in[i][1] * levels) / levels;
+    }
+
     // Perform FFT
     fftw_execute(p);
-
     // Apply histograms to real and imaginary parts
     for (int i = 0; i < chunk_size; ++i) {
         in[i][0] *= real_histogram[i];
         in[i][1] *= imag_histogram[i];
-    }
 
+        in[i][0] = round(in[i][0] * levels) / levels;
+        in[i][1] = round(in[i][1] * levels) / levels;
+    }
     // Execute Inverse FFT
     fftw_execute(p_inv);
-
     // Copy back to original image array
     for (int i = 0; i < chunk_size; ++i) {
         image[offset + i] = in[i][0] / chunk_size;
@@ -72,7 +77,7 @@ double* interpolate_histogram(double *hist, int hist_len, int chunk_size) {
 }
 
 
-// Function to be imported
+// Main entry point
 void image_fft_glitch(
         double *image,
         int image_arr_size,
@@ -119,3 +124,37 @@ void image_fft_glitch(
     free(imag_histogram);
 }
 
+
+// Alternative, simpler entry point
+void image_fft_glitch_with_named_hist(
+        double *image,
+        int image_arr_size,
+        int chunk_size,
+        const char *named_histogram
+) {
+    double *real_hist = NULL;
+    double *imag_hist = NULL;
+    int hist_len = 0;
+
+    for (int i = 0; named_histograms[i].name != NULL; ++i) {
+        if (strcmp(named_histograms[i].name, named_histogram) == 0) {
+            real_hist = named_histograms[i].hist_real;
+            imag_hist = named_histograms[i].hist_imag;
+            hist_len = named_histograms[i].len;
+            break;
+        }
+    }
+
+    if (real_hist == NULL) {
+        printf("Error! Unknown named histogram: %s\n", named_histogram);
+        return;
+    }
+
+    image_fft_glitch(image,
+                     image_arr_size,
+                     chunk_size,
+                     real_hist,
+                     hist_len,
+                     imag_hist,
+                     hist_len);
+}
