@@ -13,6 +13,7 @@
 void process_chunk(double *image,
                    int offset,
                    int chunk_size,
+                   int quantization_levels,
                    fftw_plan p,
                    fftw_plan p_inv,
                    fftw_complex *in,
@@ -26,10 +27,9 @@ void process_chunk(double *image,
     }
 
     // Quantize to X levels
-    int levels = 16;
     for (int i = 0; i < chunk_size; ++i) {
-        in[i][0] = round(in[i][0] * levels) / levels;
-        in[i][1] = round(in[i][1] * levels) / levels;
+        in[i][0] = round(in[i][0] * quantization_levels) / quantization_levels;
+        in[i][1] = round(in[i][1] * quantization_levels) / quantization_levels;
     }
 
     // Perform FFT
@@ -38,9 +38,12 @@ void process_chunk(double *image,
     for (int i = 0; i < chunk_size; ++i) {
         in[i][0] *= real_histogram[i];
         in[i][1] *= imag_histogram[i];
+    }
 
-        in[i][0] = round(in[i][0] * levels) / levels;
-        in[i][1] = round(in[i][1] * levels) / levels;
+    // Quantize to X levels (in frequency domain)
+    for (int i = 0; i < chunk_size; ++i) {
+        in[i][0] = round(in[i][0] * quantization_levels) / quantization_levels;
+        in[i][1] = round(in[i][1] * quantization_levels) / quantization_levels;
     }
     // Execute Inverse FFT
     fftw_execute(p_inv);
@@ -82,6 +85,7 @@ void image_fft_glitch(
         double *image,
         int image_arr_size,
         int chunk_size,
+        int quantization_levels,
         double *real_hist,
         int real_hist_len,
         double *imag_hist,
@@ -103,7 +107,7 @@ void image_fft_glitch(
 
 #pragma omp parallel for
     for (offset = 0; offset + chunk_size <= image_arr_size; offset += chunk_size) {
-        process_chunk(image, offset, chunk_size, p, p_inv, in, real_histogram, imag_histogram);
+        process_chunk(image, offset, chunk_size, quantization_levels, p, p_inv, in, real_histogram, imag_histogram);
     }
 
     // Handle the last chunk if it's smaller than chunk_size
@@ -111,7 +115,7 @@ void image_fft_glitch(
     if (remaining > 0) {
         fftw_plan p_last = fftw_plan_dft_1d(remaining, in, in, FFTW_FORWARD, FFTW_MEASURE);
         fftw_plan p_last_inv = fftw_plan_dft_1d(remaining, in, in, FFTW_BACKWARD, FFTW_MEASURE);
-        process_chunk(image, offset, remaining, p_last, p_last_inv, in, real_histogram, imag_histogram);
+        process_chunk(image, offset, remaining, quantization_levels, p_last, p_last_inv, in, real_histogram, imag_histogram);
         fftw_destroy_plan(p_last);
     }
 
@@ -135,7 +139,7 @@ void image_fft_glitch_with_named_hist(
     double *real_hist = NULL;
     double *imag_hist = NULL;
     int hist_len = 0;
-
+    int quant_levels = 8;
     for (int i = 0; named_histograms[i].name != NULL; ++i) {
         if (strcmp(named_histograms[i].name, named_histogram) == 0) {
             real_hist = named_histograms[i].hist_real;
@@ -153,6 +157,7 @@ void image_fft_glitch_with_named_hist(
     image_fft_glitch(image,
                      image_arr_size,
                      chunk_size,
+                     quant_levels,
                      real_hist,
                      hist_len,
                      imag_hist,
