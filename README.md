@@ -35,24 +35,8 @@ fill this part
 The snippet below...
 
 ```python
-# locate the shared library
-glitch_lib_path = "bin/krlnk_image_fft_glitch.so"
-image_fft_glitch = ctypes.CDLL(glitch_lib_path)
-image_fft_glitch.image_fft_glitch.argtypes = [ctypes.POINTER(ctypes.c_double),  # image 2D array
-                                              ctypes.c_int,  # number of pixels in 2D array
-                                              ctypes.c_int,  # chunk size -> recommended image width
-                                              ctypes.c_char_p,  # effect name
-                                              ctypes.c_bool]  # apply interlacing
-# apply the function to a 2D array
-channel = img[:, :, channel_num].flatten()
-# Create ctypes-compatible arrays
-channel_c_array = (ctypes.c_double * len(channel))(*channel)
-# Call your pseudo_compress_decompress_wrapper function for each channel
-image_fft_glitch.image_fft_glitch(channel_c_array, len(channel), chunk_size, test_effect, True)
-# Convert ctypes array back to NumPy arrays
-channel_numpy = np.ctypeslib.as_array(channel_c_array)
-# Reshape to original 2D shape
-reshaped_arr = channel_numpy.reshape(img[:, :, channel_num].shape)
+# To be filled -> I redefine args every hour.
+# Let's wait until it's stable.
 ```
 
 ### In a swiftUI app

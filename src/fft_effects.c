@@ -4,6 +4,9 @@
 // Collection of effects on FFT
 #include "fft_effects.h"
 
+// Let them stay here just for the reference.
+
+
 // good filter, I keep it
 void preserve_low_cut_high(fftw_complex *out, int chunk_size) {
     for (int i = 30; i < chunk_size - 10; ++i) {
