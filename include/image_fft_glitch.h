@@ -6,4 +6,10 @@
 #define KRLNK_COMPRESSOR_IMAGE_FFT_GLITCH_H
 
 #endif //KRLNK_COMPRESSOR_IMAGE_FFT_GLITCH_H
-void image_fft_glitch(double *image, int size, int chunk_size);
+void image_fft_glitch(double *image,
+                      int image_arr_size,
+                      int chunk_size,
+                      double *real_hist,
+                      int real_hist_len,
+                      double *imag_hist,
+                      int imag_hist_len);

@@ -11,20 +11,39 @@ os.makedirs(output_glitched_dir, exist_ok=True)
 
 glitch_lib_path = "bin/krlnk_image_fft_glitch.so"
 image_fft_glitch = ctypes.CDLL(glitch_lib_path)
-image_fft_glitch.image_fft_glitch.argtypes = [ctypes.POINTER(ctypes.c_double),
-                                              ctypes.c_int,
-                                              ctypes.c_int,
-                                              ctypes.c_char_p,
-                                              ctypes.c_bool]
-test_effect = b"amplify_high_freq"
+image_fft_glitch.image_fft_glitch.argtypes = [
+    ctypes.POINTER(ctypes.c_double),  # image
+    ctypes.c_int,                     # image_arr_size
+    ctypes.c_int,                     # chunk_size
+    ctypes.POINTER(ctypes.c_double),  # real_hist
+    ctypes.c_int,                     # real_hist_len
+    ctypes.POINTER(ctypes.c_double),  # imag_hist
+    ctypes.c_int                      # imag_hist_len
+]
+real_hist_test = [1, 0.5, 0.0, 0.0, 0.5]
+real_hist_len_test = len(real_hist_test)
+imag_hist_test = [2.0, 0.5, 0.0, 0.0, 0.0]
+imag_hist_len_test = len(real_hist_test)
 
 
 def process_channel(img, channel_num, chunk_size):
     channel = img[:, :, channel_num].flatten()
     # Create ctypes-compatible arrays
     channel_c_array = (ctypes.c_double * len(channel))(*channel)
-    # Call your pseudo_compress_decompress_wrapper function for each channel
-    image_fft_glitch.image_fft_glitch(channel_c_array, len(channel), chunk_size, test_effect, False)
+    real_hist_c_array = (ctypes.c_double * len(real_hist_test))(*real_hist_test)
+    imag_hist_c_array = (ctypes.c_double * len(imag_hist_test))(*imag_hist_test)
+
+    # Call your image_fft_glitch function for each channel
+    image_fft_glitch.image_fft_glitch(
+        channel_c_array,
+        len(channel),
+        chunk_size,
+        real_hist_c_array,
+        real_hist_len_test,
+        imag_hist_c_array,
+        imag_hist_len_test
+    )
+
     # Convert ctypes array back to NumPy arrays
     channel_numpy = np.ctypeslib.as_array(channel_c_array)
     # Reshape to original 2D shape
@@ -41,7 +60,7 @@ def run_test():
         img = io.imread(img_path)
         img_shape = img.shape
         print(f"Processing image {img_name} of shape: {img_shape}")
-        chunk_size = img.shape[1]
+        chunk_size = img.shape[1] * 4
 
         # Process each channel with the helper function
         processed_red = process_channel(img, 0, chunk_size)
