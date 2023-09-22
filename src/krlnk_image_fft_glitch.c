@@ -129,6 +129,60 @@ void image_fft_glitch(
 }
 
 
+// standalone func to process 1 chunk
+void process_1D_arr(double *arr,
+                    int arr_size,
+                    int quantization_levels,
+                    double *real_hist,
+                    int real_hist_len,
+                    double *imag_hist,
+                    int imag_hist_len
+) {
+    fftw_complex *in;
+    fftw_plan p;
+    fftw_plan p_inv;
+
+    in = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * arr_size);
+    p = fftw_plan_dft_1d(arr_size, in, in, FFTW_FORWARD, FFTW_MEASURE);
+    p_inv = fftw_plan_dft_1d(arr_size, in, in, FFTW_BACKWARD, FFTW_MEASURE);
+
+    // Copy chunk of input image data to FFTW input
+    for (int i = 0; i < arr_size; ++i) {
+        in[i][0] = arr[i];
+        in[i][1] = 0;
+    }
+
+    // Quantize to X levels
+    for (int i = 0; i < arr_size; ++i) {
+        in[i][0] = round(in[i][0] * quantization_levels) / quantization_levels;
+        // in[i][1] = round(in[i][1] * quantization_levels) / quantization_levels;
+    }
+
+    double *real_histogram = interpolate_histogram(real_hist, real_hist_len, arr_size);
+    double *imag_histogram = interpolate_histogram(imag_hist, imag_hist_len, arr_size);
+
+    // Perform FFT
+    fftw_execute(p);
+    // Apply histograms to real and imaginary parts
+    for (int i = 0; i < arr_size; ++i) {
+        in[i][0] *= real_histogram[i];
+        in[i][1] *= imag_histogram[i];
+    }
+
+    // Quantize to X levels (in frequency domain)
+    for (int i = 0; i < arr_size; ++i) {
+        in[i][0] = round(in[i][0] * quantization_levels) / quantization_levels;
+        in[i][1] = round(in[i][1] * quantization_levels) / quantization_levels;
+    }
+    // Execute Inverse FFT
+    fftw_execute(p_inv);
+    // Copy back to original image array
+    for (int i = 0; i < arr_size; ++i) {
+        arr[i] = in[i][0] / arr_size;
+    }
+}
+
+
 // Alternative, simpler entry point
 void image_fft_glitch_with_named_hist(
         double *image,
